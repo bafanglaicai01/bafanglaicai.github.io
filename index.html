@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字工具箱 - 正版软件商店</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="site-header">
+        <div class="container">
+            <a href="#" class="logo">Digital<span>Toolbox</span></a>
+            <nav class="main-nav">
+                <a href="#">首页</a>
+                <a href="#products">产品商店</a>
+                <a href="#pricing">定价方案</a>
+                <a href="#support">技术支持</a>
+            </nav>
+            <div class="header-actions">
+                <!-- 购物车图标，点击展开侧边栏 -->
+                <button class="cart-icon" id="cartToggle">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 产品展示区 -->
+        <section class="products-section" id="products">
+            <div class="section-header">
+                <h2><i class="fas fa-star"></i> 热门软件精选</h2>
+                <p>赋能您的业务，从这里开始挑选最适合的工具</p>
+            </div>
+
+            <!-- 产品分类筛选 -->
+            <div class="category-filters">
+                <button class="filter-btn active" data-category="all">全部产品</button>
+                <button class="filter-btn" data-category="office">办公必备</button>
+                <button class="filter-btn" data-category="design">设计工具</button>
+                <button class="filter-btn" data-category="system">系统工具</button>
+                <button class="filter-btn" data-category="utility">效率工具</button>
+            </div>
+
+            <!-- 产品网格容器 -->
+            <div class="products-grid" id="productsGrid">
+                <!-- 产品卡片将通过JavaScript动态生成在这里 -->
+                <p class="loading-text">正在加载产品...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 购物车侧边栏 -->
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> 我的购物车</h3>
+            <button class="close-cart" id="closeCart">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- 购物车商品将动态生成在这里 -->
+            <p class="empty-cart-msg">购物车是空的</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>总计：</span>
+                <span class="total-price">¥<span id="totalPrice">0.00</span></span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">前往结算</button>
+            <button class="continue-shopping" id="continueShopping">继续购物</button>
+        </div>
+    </aside>
+    <!-- 购物车侧边栏背景遮罩 -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- 消息提示容器 -->
+    <div id="messageContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商店后台管理系统</title>
+    <link rel="stylesheet" href="style.css"> <!-- 复用主站样式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 后台专属样式 */
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        .admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #667eea;
+        }
+        .admin-header h1 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .admin-header p {
+            color: #64748b;
+        }
+        .admin-panels {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        @media (max-width: 992px) {
+            .admin-panels {
+                grid-template-columns: 1fr;
+            }
+        }
+        .form-panel, .list-panel {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(to right, #5a6fd8, #6a4190);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .admin-product-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .admin-product-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.2s;
+        }
+        .admin-product-item:hover {
+            background-color: #f8fafc;
+        }
+        .admin-product-item.active {
+            background-color: #e0e7ff;
+        }
+        .admin-product-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .admin-product-info {
+            flex-grow: 1;
+        }
+        .admin-product-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+        .admin-product-meta {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .admin-product-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .action-btn.edit-btn:hover {
+            background-color: #dbeafe;
+            color: #3b82f6;
+        }
+        .action-btn.delete-btn:hover {
+            background-color: #fee2e2;
+            color: #ef4444;
+        }
+        #messageContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1><i class="fas fa-tools"></i> 商店后台管理系统</h1>
+            <p>在此管理您的所有商品。更改将自动同步到前台商店。</p>
+            <p><a href="index.html" style="color: #667eea; text-decoration: none;"><i class="fas fa-store"></i> 返回前台商店</a></p>
+        </header>
+
+        <div class="admin-panels">
+            <!-- 左侧：商品表单 -->
+            <section class="form-panel">
+                <h2><i class="fas fa-edit"></i> 商品信息</h2>
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    
+                    <div class="form-group">
+                        <label for="productName">商品名称 *</label>
+                        <input type="text" id="productName" class="form-control" placeholder="例如：Office 2021 专业增强版" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productCategory">商品分类 *</label>
+                        <select id="productCategory" class="form-control" required>
+                            <option value="">请选择分类</option>
+                            <option value="office">办公必备</option>
+                            <option value="design">设计工具</option>
+                            <option value="system">系统工具</option>
+                            <option value="utility">效率工具</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">价格 (¥) *</label>
+                        <input type="number" id="productPrice" class="form-control" step="0.01" min="0" placeholder="例如：168.00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productDescription">商品描述 *</label>
+                        <textarea id="productDescription" class="form-control" placeholder="详细描述商品的功能和特点..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productImageUrl">图片URL *</label>
+                        <input type="text" id="productImageUrl" class="form-control" placeholder="请输入完整的图片网络地址" required>
+                        <small style="color: #94a3b8; display: block; margin-top: 5px;">提示：您可以在京东、淘宝等商品页右键复制图片地址。</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productBadge">促销标签 (可选)</label>
+                        <input type="text" id="productBadge" class="form-control" placeholder="例如：永久买断、限时折扣">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productRating">评分 (0-5) *</label>
+                        <input type="number" id="productRating" class="form-control" step="0.1" min="0" max="5" value="4.5" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-plus-circle"></i> 添加商品
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetBtn">
+                            <i class="fas fa-redo"></i> 重置表单
+                        </button>
+                        <button type="button" class="btn btn-danger" id="clearAllBtn" style="margin-left: auto;">
+                            <i class="fas fa-trash-alt"></i> 清空所有商品
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- 右侧：商品列表 -->
+            <section class="list-panel">
+                <h2><i class="fas fa-list"></i> 商品列表 (<span id="productsCount">0</span>)</h2>
+                <div class="admin-product-list" id="adminProductList">
+                    <!-- 商品列表将动态加载在这里 -->
+                    <p style="text-align: center; color: #94a3b8; padding: 2rem;">暂无商品，请添加您的第一个商品。</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- 消息提示容器 -->
+    <div id="messageContainer"></div>
+
+    <!-- 后台管理逻辑 -->
+    <script>
+        // 从 localStorage 读取商品数据，如果没有则使用默认数据
+        const STORAGE_KEY = 'storeProducts';
+        let products = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+            {
+                id: 1,
+                name: "Office 2021 专业增强版",
+                category: "office",
+                price: 168.00,
+                description: "包含 Word, Excel, PPT 等全套组件，一次购买永久使用，支持重装。",
+                imageUrl: "https://img14.360buyimg.com/n1/s450x450_jfs/t1/172770/39/33162/110998/63da3f5aF6f3b1b5c/5b0900654ca73bc0.jpg",
+                badge: "永久买断",
+                rating: 4.9
+            },
+            {
+                id: 2,
+                name: "Adobe Photoshop 2024",
+                category: "design",
+                price: 88.00,
+                description: "全球最流行的图像处理软件，新增 AI 填充功能，设计师必备神器。",
+                imageUrl: "https://img12.360buyimg.com/n1/s450x450_jfs/t1/197572/3/30634/55741/639257adE1a5f8c52/bc05bca381f0665f.jpg",
+                badge: "AI加持",
+                rating: 5.0
+            }
+        ];
+
+        // DOM 元素
+        const productForm = document.getElementById('productForm');
+        const adminProductList = document.getElementById('adminProductList');
+        const productsCountEl = document.getElementById('productsCount');
+        let editingProductId = null;
+
+        // 初始化：渲染列表并保存初始数据
+        function init() {
+            saveProducts();
+            renderProductList();
+            attachEventListeners();
+            showMessage('后台管理系统已就绪。当前数据已保存至本地。', 'info');
+        }
+
+        // 保存商品数据到 localStorage
+        function saveProducts() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        }
+
+        // 渲染商品列表
+        function renderProductList() {
+            if (products.length === 0) {
+                adminProductList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">暂无商品，请添加您的第一个商品。</p>';
+                productsCountEl.textContent = '0';
+                return;
+            }
+
+            adminProductList.innerHTML = products.map(product => `
+                <div class="admin-product-item ${editingProductId === product.id ? 'active' : ''}" data-id="${product.id}">
+                    <img src="${product.imageUrl}" alt="${product.name}" class="admin-product-img"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/667eea/ffffff?text=预览'">
+                    <div class="admin-product-info">
+                        <div class="admin-product-name">${product.name}</div>
+                        <div class="admin-product-meta">
+                            分类：${getCategoryName(product.category)} | 
+                            价格：¥${product.price.toFixed(2)} | 
+                            评分：${product.rating}
+                            ${product.badge ? ` | 标签：<span style="background:#10b981; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">${product.badge}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="admin-product-actions">
+                        <button class="action-btn edit-btn" onclick="editProduct(${product.id})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteProduct(${product.id})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            productsCountEl.textContent = products.length;
+        }
+
+        // 根据分类键名获取中文名
+        function getCategoryName(categoryKey) {
+            const map = {'office':'办公必备', 'design':'设计工具', 'system':'系统工具', 'utility':'效率工具'};
+            return map[categoryKey] || '其他';
+        }
+
+        // 编辑商品
+        window.editProduct = function(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            // 填充表单
+            document.getElementById('productId').value = product.id;
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productDescription').value = product.description;
+            document.getElementById('productImageUrl').value = product.imageUrl;
+            document.getElementById('productBadge').value = product.badge || '';
+            document.getElementById('productRating').value = product.rating;
+
+            // 更新按钮状态
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> 更新商品';
+            submitBtn.style.background = 'linear-gradient(to right, #f59e0b, #fbbf24)';
+
+            editingProductId = id;
+            renderProductList(); // 重新渲染列表以高亮正在编辑的商品
+            showMessage(`正在编辑“${product.name}”，修改后请点击“更新商品”。`, 'info');
+        };
+
+        // 删除商品
+        window.deleteProduct = function(id) {
+            if (!confirm('确定要删除这个商品吗？此操作不可撤销。')) return;
+
+            const productName = products.find(p => p.id === id)?.name;
+            products = products.filter(p => p.id !== id);
+            
+            // 如果正在编辑的商品被删除，则重置表单
+            if (editingProductId === id) {
+                resetForm();
+            }
+
+            saveProducts();
+            renderProductList();
+            showMessage(`商品“${productName}”已删除。`, 'warning');
+        };
+
+        // 表单提交处理（添加/更新）
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('productId').value;
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const description = document.getElementById('productDescription').value.trim();
+            const imageUrl = document.getElementById('productImageUrl').value.trim();
+            const badge = document.getElementById('productBadge').value.trim();
+            const rating = parseFloat(document.getElementById('productRating').value);
+
+            // 验证必填项
+            if (!name || !category || !price || !description || !imageUrl) {
+                showMessage('请填写所有必填字段（带*号）。', 'error');
+                return;
+            }
+
+            const productData = {
+                id: id ? parseInt(id) : Date.now(), // 新商品用时间戳作为ID
+                name,
+                category,
+                price,
+                description,
+                imageUrl,
+                badge: badge || null,
+                rating
+            };
+
+            if (id) {
+                // 更新现有商品
+                const index = products.findIndex(p => p.id === parseInt(id));
+                if (index !== -1) {
+                    products[index] = productData;
+                    showMessage(`商品“${name}”更新成功！`, 'success');
+                }
+            } else {
+                // 添加新商品
+                products.push(productData);
+                showMessage(`新商品“${name}”添加成功！`, 'success');
+            }
+
+            saveProducts();
+            renderProductList();
+            resetForm();
+        }
+
+        // 重置表单
+        function resetForm() {
+            productForm.reset();
+            document.getElementById('productId').value = '';
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> 添加商品';
+            submitBtn.style.background = '';
+            editingProductId = null;
+            renderProductList(); // 取消列表中的高亮
+        }
+
+        // 清空所有商品
+        function clearAllProducts() {
+            if (products.length === 0) {
+                showMessage('商品列表已经是空的。', 'info');
+                return;
+            }
+
+            if (!confirm('警告：这将永久删除所有商品数据！\n\n确定要继续吗？')) return;
+
+            products = [];
+            saveProducts();
+            renderProductList();
+            resetForm();
+            showMessage('所有商品数据已清空。', 'warning');
+        }
+
+        // 显示消息提示
+        function showMessage(text, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message-box ${type}`;
+            messageEl.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${text}</span>
+            `;
+            container.appendChild(messageEl);
+            setTimeout(() => messageEl.remove(), 4000);
+        }
+
+        // 附加事件监听器
+        function attachEventListeners() {
+            productForm.addEventListener('submit', handleFormSubmit);
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+            document.getElementById('clearAllBtn').addEventListener('click', clearAllProducts);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
